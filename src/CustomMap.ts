@@ -1,9 +1,11 @@
 // Instructions to every other class on how they can be an argument to 'addMarker'
-interface Mappable {
+export interface Mappable {
 	location: {
 		lat: number;
 		lng: number;
 	};
+	markerContent(): string;
+	color: string;
 }
 
 export class CustomMap {
@@ -23,12 +25,20 @@ export class CustomMap {
 	// and typescript will implicitly check that whatever you pass in as mappable
 	// has the properties on Mappable interface which both User and Company do
 	addMarker(mappable: Mappable): void {
-		new google.maps.Marker({
+		const marker = new google.maps.Marker({
 			map: this.googleMap,
 			position: {
 				lat: mappable.location.lat,
 				lng: mappable.location.lng
 			}
+		});
+
+		marker.addListener('click', () => {
+			const infoWindow = new google.maps.InfoWindow({
+				content: mappable.markerContent()
+			});
+
+			infoWindow.open(this.googleMap, marker);
 		});
 	}
 }

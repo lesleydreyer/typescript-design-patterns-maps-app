@@ -85107,18 +85107,15 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var faker_1 = __importDefault(require("faker")); // when you write Typescript you can make use of Javascript and JS libraries
-// BUT TS wants to know about all the types of info given to functions and received from functions
-// so you need a type definition file to act as an adapter for JS libraries to tell what TS what to do
-// some libraries automatically come with a type definition (xxx.d.ts) file and some don't so if you get a error saying
-// Could not find a declaration file for module 'faker' you probably need to install a separate package
-// so you have to do npm install faker and also npm install @types/faker (look at npmjs.com for DefinitelyTyped)
+var faker_1 = __importDefault(require("faker")); // by saying implements Mappable the User file will light up that there's an error if you modify mappable
+// and User doesn't fit the interface anymore, so it helps to find errors basically
 
 
 var User =
 /** @class */
 function () {
   function User() {
+    this.color = 'red';
     this.name = faker_1.default.name.firstName();
     this.location = {
       // faker returns string instead of number so convert it to number
@@ -85126,6 +85123,10 @@ function () {
       lng: parseFloat(faker_1.default.address.longitude())
     };
   }
+
+  User.prototype.markerContent = function () {
+    return "User Name: " + this.name;
+  };
 
   return User;
 }();
@@ -85150,6 +85151,7 @@ var Company =
 /** @class */
 function () {
   function Company() {
+    this.color = 'red';
     this.companyName = faker_1.default.company.companyName();
     this.catchPhrase = faker_1.default.company.catchPhrase();
     this.location = {
@@ -85157,6 +85159,10 @@ function () {
       lng: parseFloat(faker_1.default.address.longitude())
     };
   }
+
+  Company.prototype.markerContent = function () {
+    return "\n            <div>\n                <h1>Company Name: " + this.companyName + "</h1>\n                <h3>Catchphrase: " + this.catchPhrase + "</h3>\n            </div>\n        ";
+  };
 
   return Company;
 }();
@@ -85186,12 +85192,20 @@ function () {
 
 
   CustomMap.prototype.addMarker = function (mappable) {
-    new google.maps.Marker({
+    var _this = this;
+
+    var marker = new google.maps.Marker({
       map: this.googleMap,
       position: {
         lat: mappable.location.lat,
         lng: mappable.location.lng
       }
+    });
+    marker.addListener('click', function () {
+      var infoWindow = new google.maps.InfoWindow({
+        content: mappable.markerContent()
+      });
+      infoWindow.open(_this.googleMap, marker);
     });
   };
 
